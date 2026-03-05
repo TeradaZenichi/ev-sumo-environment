@@ -1,15 +1,45 @@
 from evse import EVSE
 from ev import EV
+from parking import PARKING
+from sumo import Sumo
+import traci
+import json
 
 
-evse1 = EVSE()
-ev1 = EV()
+
+"""Load config at config/config.json"""
+with open(r'config/config.json', 'r') as config_file:
+    config = json.load(config_file)
+
+with open('config/vehicles.json', "r", encoding="utf-8") as f:
+    vehicles = json.load(f)
 
 
-vehicles = []
+def main():
 
-for ev in vehicles
-chargers = []
+    simulation = Sumo(config)   # cria objeto da classe Sumo
+    chargers = EVSE()  # cria objeto da classe EVSE
+    evs = []
+    for id in vehicles:
+        ev = EV(id, vehicles[id]["type"], ['E103',"ROTA DA POLICIA",'E165'])
+        evs.append(ev)
+    
+    
+
+    #simulation.setup_results_and_headers()
+    
+    while traci.simulation.getTime() != simulation.max_time:
+ 
+        traci.simulationStep()
+
+
+
+
+
+if __name__ == "__main__":
+    main()
+
+
 
 
 

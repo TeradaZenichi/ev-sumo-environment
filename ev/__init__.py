@@ -1,15 +1,15 @@
 import numpy as np
 import traci
-import random
-import json
 
 class EV:
-    def __init__(self, id=None):
+    def __init__(self, id:str,type:str,destin:str):
         # -----------------------------
         # Identificação do veículo
         # -----------------------------
         self.id = id              # ID único do veículo
-        self.type = None          # Tipo do veículo ("electric" ou "electric bus")
+        self.type = type
+
+        self._addveh(destin)
 
         # -----------------------------
         # Estado energético
@@ -42,26 +42,35 @@ class EV:
         # -----------------------------
         # Distâncias
         # -----------------------------
-        self.dist_to_dest = np.inf    # Distância até o destino atual (m)
+        self.dist_to_dest  = np.inf    # Distância até o destino atual (m)
         self.dist_to_final = np.inf   # Distância até o destino final (m)
-        self.total_dist = np.inf      # Distância total percorrida (m)
+        self.total_dist    = np.inf      # Distância total percorrida (m)
 
-
-        # Carrega config
-        with open('config/config.json', 'r') as config_file:
-            self.configer = json.load(config_file)
-
+        #inicialização inicial
+        self.update_energy()
+        self.update_route()
+        self.update_finalroute()
+        self.update_motion()
+        self.update_distances()
         pass
 
-    def identify(self, id):
-        self.id = id
-        self.type = traci.vehicle.getTypeID(self.id)
+    def _addveh(self,destin): #vetor [edge do destino, id da rota]
+
+        self.create_route(destin)
+
+        traci.vehicle.add(
+                vehID=self.id,
+                routeID=destin[1],
+                typeID=self.type,
+                depart=traci.simulation.getTime()
+            )
+
         return
-    
+
     def update_energy(self):
         self.energy = round(float(traci.vehicle.getParameter(self.id, "device.battery.chargeLevel")) / 1000, 2)
         self.energy_loaded = round(float(traci.vehicle.getParameter(self.id, "device.battery.energyCharged")) / 1000, 2)
-        self.energy_regen = round(float(traci.vehicle.getParameter(self.id, "device.battery.energyRegenerated")) / 1000, 2)
+        #self.energy_regen = round(float(traci.vehicle.getParameter(self.id, "device.battery.energyRegenerated")) / 1000, 2)
         self.capacity = round(float(traci.vehicle.getParameter(self.id, "device.battery.capacity")) / 1000, 2)
         self.soc = round(100 * self.energy / self.capacity, 2) 
 
@@ -152,6 +161,12 @@ class EV:
         traci.vehicle.setRouteID(self.id, destin[1])
         self.update_route()
         self.update_finalroute()
+        return 
+    
+    def create_route(self,destin): #vetor = [id do destino,id da rota]
+        route = traci.simulation.findRoute(destin[2], destin[0], vType=self.type)
+        traci.route.add(destin[1], route.edges)
+        
         return 
     
     def step(self,action,destin) :

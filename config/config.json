@@ -13,10 +13,6 @@
     "random-trip" : "Tools/randomTrips.py",
     "convert-fleet" : "Tools/convert_fleet.py",
 
-    "vehicles": ["evehicle","ElectricBus"],
-    "RESTRICTED_TYPES" : ["bus"],
-    "vehicles_number" : 1,
-
     "period": "1",
     "delay": "120",
     "step": "0.5",

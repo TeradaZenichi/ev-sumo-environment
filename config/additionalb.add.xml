@@ -20,6 +20,7 @@
             decel="4.5"
             emergencyDecel="9.0"
             maxSpeed="33.33"
+            color="0,255,255,255"
             
             personCapacity="4"
             guiShape="evehicle"

@@ -1,7 +1,6 @@
 import traci
 from sumolib import checkBinary
 import json
-import random
 from pathlib import Path
 import csv
 import subprocess
@@ -11,25 +10,24 @@ import os
 
 class Sumo:
 
-    def __init__(self):
+    def __init__(self, config):
         self.sumoBinary = checkBinary('sumo-gui')
-
-        # Carrega config
-        with open('config/config.json', 'r') as config_file:
-            self.config = json.load(config_file)
-
         self.max_time = 0
-        self.veh = []
-
+        self.veh = None
+        self.config = config
+        self.uptime()
+        self.generate_activity_trips()
+        self.apply_fleet_conversion()
+        self.startSim()
         pass
 
-    def upveh(self):
-        self.veh = [f"veh_{i}" for i in range(self.config["vehicles_number"])]
+    def upveh(self,ID):
+        self.veh = ID
         return
     
     def uptime(self):
         self.max_time = self.config["Max_time"]
-        return
+        return self.max_time
     
     def setup_results_and_headers(self):
 
@@ -161,5 +159,5 @@ class Sumo:
             ]
         )
     
-    
+
     
