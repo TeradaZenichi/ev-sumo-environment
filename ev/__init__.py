@@ -65,13 +65,17 @@ class EV:
         self.capacity = round(float(traci.vehicle.getParameter(self.id, "device.battery.capacity")) / 1000, 2)
         self.soc = round(100 * self.energy / self.capacity, 2) 
 
-    def update_route(self, final_dest):
+    def update_route(self):
         route_id = traci.vehicle.getRouteID(self.id)
         edges = traci.route.getEdges(route_id)
 
         self.edge = traci.vehicle.getRoadID(self.id)
         self.dest = edges[-1]
-        self.final_dest = final_dest
+
+    def update_finalroute(self):
+        route_id = traci.vehicle.getRouteID(self.id)
+        edges = traci.route.getEdges(route_id)
+        self.final_dest = edges[-1]
     
     def update_motion(self):
         self.speed = round(traci.vehicle.getSpeed(self.id), 2)
@@ -125,93 +129,49 @@ class EV:
         self.total_dist = round(traci.vehicle.getDistance(self.id), 2)
         return
     
-    def recharge_substation(self,temp):
-
-        charging_stations = traci.chargingstation.getIDList()
-        
-        station_id = random.choice(charging_stations)
-        lane_id = traci.chargingstation.getLaneID(station_id)
-        edge_id = lane_id.split("_")[0]
-
-        traci.vehicle.changeTarget(self.id, edge_id)
-        traci.vehicle.setChargingStationStop(self.id, station_id, duration=temp,flags=1)  
+    def recharge_substation(self,destin): # vetor = [edge da estação, id da estação]
+        traci.vehicle.changeTarget(self.id, destin[0])
+        traci.vehicle.setChargingStationStop(self.id, destin[1], duration=300,flags=1) 
+        self.update_route() 
         return 
     
-    def stopParking(self,temp):
-
-        all_parkings = traci.parkingarea.getIDList()
-
-        parkingID = random.choice(all_parkings)
-        lane_id = traci.parkingarea.getLaneID(parkingID)
-        edge_id = lane_id.split("_")[0]
-
-        traci.vehicle.changeTarget(self.id, edge_id)
-        traci.vehicle.setParkingAreaStop(self.id, parkingID, duration=temp)
-
+    def stopParking(self,destin): # vetor = [id do estacionamento, id do estacionamento]
+        traci.vehicle.changeTarget(self.id, destin[0])
+        traci.vehicle.setParkingAreaStop(self.id, destin[1], duration=300)
+        self.update_route()
         return
     
-      
-    def newroute(self):
+    def returnfinaldestin(self):
+        traci.vehicle.changeTarget(self.id, self.final_dest)
+        self.update_route()
+        return
 
-        edges = []
-        route_id = f"route_{self.id}"
-
-        # Achar edges válidas
-        for edge in traci.edge.getIDList():
-            if edge.startswith(":"):  # ignore internal edges
-                continue
-            if traci.edge.getLaneNumber(edge) == 0:
-                continue
-
-            for i in range(traci.edge.getLaneNumber(edge)):
-                lane_id = f"{edge}_{i}"
-                allowed = traci.lane.getAllowed(lane_id)
-
-                if not allowed:
-                    if self.type not in self.configer["RESTRICTED_TYPES"]:
-                        edges.append(edge)
-                        break
-                else:
-                    if self.type in allowed:
-                        edges.append(edge)
-                        break
-
-        for travel in range(10):
-
-            to_edge = random.choice(edges)
-
-            while to_edge == self.edge:
-                to_edge = random.choice(edges)
-
-            route = traci.simulation.findRoute(self.edge, to_edge, vType=self.type)
-
-            if not route.edges:
-                continue
-
-            # Adiciona rota se ainda não existir
-            if route_id not in traci.route.getIDList():
-                traci.route.add(route_id, route.edges)
-
-            
-            traci.vehicle.setRouteID(self.id, route_id)
-
-            return 
-
+    def newroute(self,destin): #vetor = [id do destino,id da rota]
+        route = traci.simulation.findRoute(self.edge, destin[0], vType=self.type)
+        traci.route.add(destin[1], route.edges)
+        traci.vehicle.setRouteID(self.id, destin[1])
+        self.update_route()
+        self.update_finalroute()
         return 
     
-    def step(self,action,temp) :
+    def step(self,action,destin) :
         if action == "Seguir" :
+            self.update_route()
             return
         
         elif action == "Carregar":
-            self.recharge_substation(self.id,temp)
+            self.recharge_substation(destin)
             return
         
         elif action == "Estacionar":
-            self.stopParking(self.id,temp)
+            self.stopParking(destin)
+            return
+        
+        elif action == "Voltar ao destino final": 
+            self.returnfinaldestin()
             return
         
         elif action == "Achar novo destino":
-            self.newroute()
+            self.newroute(destin)
             return
 
