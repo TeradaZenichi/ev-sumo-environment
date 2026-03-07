@@ -3,29 +3,29 @@ import traci
 class PARKING:
     def __init__(self):
         # -----------------------------
-        # Identificação dos parkings
+        # Parking identification
         # -----------------------------
-        self.ids = []            # IDs das áreas de estacionamento
-        self.count = 0           # Número total de parkings
+        self.ids = []            # IDs of parking areas
+        self.count = 0           # Total number of parkings
 
         # -----------------------------
-        # Veículos no estacionamento
+        # Vehicles in the parking
         # -----------------------------
-        self.veh = []            # IDs dos veículos estacionados
-        self.veh_count = 0       # Número de veículos no parking
+        self.veh = []            # IDs of parked vehicles
+        self.veh_count = 0       # Number of vehicles in the parking
 
         pass
 
     def update(self):
-        # Lista de estacionamentos disponíveis
+        # List of available parking areas
         self.ids = traci.parkingarea.getIDList()
         self.count = len(self.ids)
         return
 
     def status(self, parkingId):
-        # Veículos estacionados na área
+        # Vehicles parked in the area
         self.veh = traci.parkingarea.getVehicleIDs(parkingId)
 
-        # Número total de veículos no estacionamento
+        # Total number of vehicles in the parking
         self.veh_count = traci.parkingarea.getVehicleCount(parkingId)
         return

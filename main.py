@@ -4,8 +4,8 @@ from parking import PARKING
 from sumo import Sumo
 import traci
 import json
-
-
+import random
+from datetime import datetime, timedelta
 
 """Load config at config/config.json"""
 with open(r'config/config.json', 'r') as config_file:
@@ -14,110 +14,49 @@ with open(r'config/config.json', 'r') as config_file:
 with open('config/vehicles.json', "r", encoding="utf-8") as f:
     vehicles = json.load(f)
 
-
 def main():
 
-    simulation = Sumo(config)   # cria objeto da classe Sumo
+    simulation = Sumo(config,vehicles)   # cria objeto da classe Sumo
     chargers = EVSE()  # cria objeto da classe EVSE
+    park = PARKING()
     evs = []
+    contador = 0
+
     for id in vehicles:
         ev = EV(id, vehicles[id]["type"], ['E103',"ROTA DA POLICIA",'E165'])
         evs.append(ev)
     
+    simulation.setup_results_and_headers()
     
+    chargers.update()
+    W = random.choice(chargers.ids)
+    chargers.get_edge(W)
 
-    #simulation.setup_results_and_headers()
-    
-    while traci.simulation.getTime() != simulation.max_time:
- 
+    edges = traci.edge.getIDList()
+
+    ruas = set()
+
+    for edge in edges:
+        if not edge.startswith(":"):  # ignora edges internas
+            ruas.add(edge.split("_")[0])
+
+    while traci.simulation.getTime() < simulation.max_time:
+
+        # if not ev.edge.startswith(":"):
+        #         rua = ev.edge.split("_")[0]
+        ev.step("Continue",[])
+        ev.register(traci.simulation.getTime())
+
+        if ev.soc < 20 and not(ev.going_to_charge):
+            ev.step("Recharge", [chargers.edge,w])
+        elif ev.penultimate_dest == ev.edge:
+            contador+=1
+            w= random.choice([x for x in ruas if x != ev.final_dest])
+            route_id = f"route_{ev.id}_{contador}"
+            ev.step("Find new route", [w,route_id])
+
+
         traci.simulationStep()
-
-
-
-
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-'''
-
-    def recharge_substation(self,temp):
-
-        charging_stations = traci.chargingstation.getIDList()
-        
-        station_id = random.choice(charging_stations)
-        lane_id = traci.chargingstation.getLaneID(station_id)
-        edge_id = lane_id.split("_")[0]
-
-        traci.vehicle.changeTarget(self.id, edge_id)
-        traci.vehicle.setChargingStationStop(self.id, station_id, duration=temp,flags=1)  
-        return 
-    
-    def stopParking(self,temp):
-
-        all_parkings = traci.parkingarea.getIDList()
-
-        parkingID = random.choice(all_parkings)
-        lane_id = traci.parkingarea.getLaneID(parkingID)
-        edge_id = lane_id.split("_")[0]
-
-        traci.vehicle.changeTarget(self.id, edge_id)
-        traci.vehicle.setParkingAreaStop(self.id, parkingID, duration=temp)
-
-        return
-    
-      
-    def newroute(self):
-
-        edges = []
-        route_id = f"route_{self.id}"
-
-        # Achar edges válidas
-        for edge in traci.edge.getIDList():
-            if edge.startswith(":"):  # ignore internal edges
-                continue
-            if traci.edge.getLaneNumber(edge) == 0:
-                continue
-
-            for i in range(traci.edge.getLaneNumber(edge)):
-                lane_id = f"{edge}_{i}"
-                allowed = traci.lane.getAllowed(lane_id)
-
-                if not allowed:
-                    if self.type not in self.configer["RESTRICTED_TYPES"]:
-                        edges.append(edge)
-                        break
-                else:
-                    if self.type in allowed:
-                        edges.append(edge)
-                        break
-
-        for travel in range(10):
-
-            to_edge = random.choice(edges)
-
-            while to_edge == self.edge:
-                to_edge = random.choice(edges)
-
-            route = traci.simulation.findRoute(self.edge, to_edge, vType=self.type)
-
-            if not route.edges:
-                continue
-
-            # Adiciona rota se ainda não existir
-            if route_id not in traci.route.getIDList():
-                traci.route.add(route_id, route.edges)
-
-            
-            traci.vehicle.setRouteID(self.id, route_id)
-
-            return 
-
-        return 
-
-'''

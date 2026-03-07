@@ -1,6 +1,5 @@
 import traci
 from sumolib import checkBinary
-import json
 from pathlib import Path
 import csv
 import subprocess
@@ -10,11 +9,14 @@ import os
 
 class Sumo:
 
-    def __init__(self, config):
+    def __init__(self, config,vehicles):
+        
         self.sumoBinary = checkBinary('sumo-gui')
         self.max_time = 0
-        self.veh = None
+         
         self.config = config
+        self.veh = list(vehicles.keys())
+        
         self.uptime()
         self.generate_activity_trips()
         self.apply_fleet_conversion()
@@ -62,7 +64,6 @@ class Sumo:
             with open(arquivo_csv, mode="w", newline="", encoding="utf-8") as file:
                 writer = csv.writer(file)
                 writer.writerow(cabecalho)
-
 
     def generate_activity_trips(self):
         # O activitygen costuma estar no mesmo diretório do sumo
@@ -122,25 +123,7 @@ class Sumo:
         except Exception as e:
             print(f"Ocorreu um erro inesperado: {e}")
 
-    """Run randomTrips.py script"""
-    def generate_random_trips(self):
-        cmd = [
-            sys.executable,
-            self.config["random-trip"],
-            "-n", self.config["net-file"],
-            "-o", self.config["trips-file"],
-            "-r", self.config["route-files"],
-            "-e", "500",
-            "-t", 'type="frota_mista"',
-            "-a", self.config["additional-files"],
-            "--additional-files", self.config["additional-random"], 
-            "--period", self.config["period"],
-            "--seed", "42",
-            "--validate"
-        ]
-        subprocess.run(cmd, check=True)
-    
-    """Starts the simulation."""
+    #Starts the simulation
     def startSim(self):
         traci.start(
             [

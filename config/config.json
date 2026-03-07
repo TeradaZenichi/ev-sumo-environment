@@ -1,8 +1,8 @@
 {
-    "net-file": "config/netb.net.xml",
+    "net-file": "config/net.net.xml",
     "route-files": "config/routes.trip.xml",
     "route-mista": "config/configActivitybasedDemandGeneration/routes_mista.trip.xml",
-    "additional-files": "config/additionalb.add.xml",
+    "additional-files": "config/additional.add.xml",
     "additional-random": "config/additionalforRANDOMTRIPS.add.xml",
     "gui-settings-file": "config/viewssettings.xml",
     "trips-file": "config/trips.trips.xml",
@@ -14,8 +14,8 @@
     "convert-fleet" : "Tools/convert_fleet.py",
 
     "period": "1",
-    "delay": "120",
+    "delay": "20",
     "step": "0.5",
-    "Max_time" : 600
+    "Max_time" : 100000
     
 }

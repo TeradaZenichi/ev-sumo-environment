@@ -1,52 +1,62 @@
 import numpy as np
 import traci
+from pathlib import Path
+import csv
 
 class EV:
-    def __init__(self, id:str,type:str,destin:str):
+    def __init__(self, id:str,type:str,dest:str):
         # -----------------------------
-        # Identificação do veículo
+        # Vehicle identification
         # -----------------------------
-        self.id = id              # ID único do veículo
-        self.type = type
-
-        self._addveh(destin)
+        self.id = id                                                                # Unique vehicle ID
+        self.type = type                                                            # Vehicle type
 
         # -----------------------------
-        # Estado energético
+        # Add the vehicle
         # -----------------------------
-        self.energy = 0.0         # Carga atual da bateria (KWh)
-        self.energy_loaded = 0.0  # Energia total carregada ao longo do tempo (kWh)
-        self.energy_regen = 0.0   # Energia total regenerada (kWh)
-        self.capacity = 0.0       # Capacidade total da bateria (kWh)
-        self.soc = 0.0            # Estado de carga (%)
+        self._addveh(dest)
 
         # -----------------------------
-        # Localização e rota
+        # Energy state
         # -----------------------------
-        self.edge = None          # Edge atual
-        self.dest = None          # Destino intermediário atual
-        self.final_dest = None    # Destino final da viagem
+        self.energy = 0.0                                                           # Current battery charge (kWh)
+        self.energy_loaded = 0.0                                                    # Total energy charged over time (kWh)
+        self.energy_regen = 0.0                                                     # Total regenerated energy (kWh)
+        self.capacity = 0.0                                                         # Total battery capacity (kWh)
+        self.soc = 0.0                                                              # State of charge (%)
+        self.going_to_charge = False
 
         # -----------------------------
-        # Movimento
+        # Location and route
         # -----------------------------
-        self.speed = 0.0                # Velocidade atual (m/s)
-        self.consumption = 0.0          # Consumo elétrico instantâneo (KWh/s)
-        self.speedKm = 0.0              # Velocidade atual (Km/h)
+        self.edge = None                                                            # Current edge
+        self.dest = None                                                            # Current intermediate destination
+        self.final_dest = None                                                      # Final trip destination
+        self.penultimate_dest = None                                                # penultimate final trip destination
 
         # -----------------------------
-        # Estado de parada (bitmask)
+        # Motion
         # -----------------------------
-        self.stop_state = 0       # Estado atual de parada (bitmask)
+        self.speed = 0.0                                                            # Current speed (m/s)
+        self.consumption = 0.0                                                      # Instantaneous electric consumption (kWh/s)
+        self.speedKm = 0.0                                                          # Current speed (km/h)
 
         # -----------------------------
-        # Distâncias
+        # Stop state (bitmask)
         # -----------------------------
-        self.dist_to_dest  = np.inf    # Distância até o destino atual (m)
-        self.dist_to_final = np.inf   # Distância até o destino final (m)
-        self.total_dist    = np.inf      # Distância total percorrida (m)
+        self.stop_state = 0                                                         # Current stop state (bitmask)
 
-        #inicialização inicial
+        # -----------------------------
+        # Distances
+        # -----------------------------
+        self.dist_to_dest  = np.inf                                                 # Distance to current destination (m)
+        self.dist_to_final = np.inf                                                 # Distance to final destination (m)
+        self.total_dist    = np.inf                                                 # Total distance traveled (m)
+
+
+        # -----------------------------
+        # Initial initialization
+        # -----------------------------  
         self.update_energy()
         self.update_route()
         self.update_finalroute()
@@ -54,13 +64,13 @@ class EV:
         self.update_distances()
         pass
 
-    def _addveh(self,destin): #vetor [edge do destino, id da rota]
+    def _addveh(self,dest):                                                         # dest vector = [destination_edge, route_id]
 
-        self.create_route(destin)
+        self.create_route(dest)
 
         traci.vehicle.add(
                 vehID=self.id,
-                routeID=destin[1],
+                routeID=dest[1],
                 typeID=self.type,
                 depart=traci.simulation.getTime()
             )
@@ -77,14 +87,18 @@ class EV:
     def update_route(self):
         route_id = traci.vehicle.getRouteID(self.id)
         edges = traci.route.getEdges(route_id)
-
         self.edge = traci.vehicle.getRoadID(self.id)
         self.dest = edges[-1]
 
     def update_finalroute(self):
         route_id = traci.vehicle.getRouteID(self.id)
         edges = traci.route.getEdges(route_id)
-        self.final_dest = edges[-1]
+        if len(edges) >=2 :
+            self.final_dest = edges[-1]
+            self.penultimate_dest = edges[-2]
+        else :
+            self.final_dest = edges[-1]
+            self.penultimate_dest = self.final_dest           
     
     def update_motion(self):
         self.speed = round(traci.vehicle.getSpeed(self.id), 2)
@@ -95,26 +109,26 @@ class EV:
         state = int(traci.vehicle.getStopState(self.id))
         self.stop_state = state
 
-        estados = []
+        states = []
 
         if state & 1:
-            estados.append("parado")
+            states.append("stopped")
         if state & 2:
-            estados.append("estacionando")
+            states.append("parking")
         if state & 4:
-            estados.append("acionado")
+            states.append("triggered")
         if state & 8:
-            estados.append("container acionado")
+            states.append("container triggered")
         if state & 16:
-            estados.append("ponto de ônibus")
+            states.append("bus stop")
         if state & 32:
-            estados.append("ponto de contêiner")
+            states.append("container stop")
         if state & 64:
-            estados.append("estação de carregamento")
+            states.append("charging station")
         if state & 128:
-            estados.append("estacionamento")
+            states.append("parking area")
 
-        return estados if estados else ["em movimento"]
+        return states if states else ["moving"]
 
     def update_distances(self):
         self.dist_to_dest = round(
@@ -138,55 +152,96 @@ class EV:
         self.total_dist = round(traci.vehicle.getDistance(self.id), 2)
         return
     
-    def recharge_substation(self,destin): # vetor = [edge da estação, id da estação]
-        traci.vehicle.changeTarget(self.id, destin[0])
-        traci.vehicle.setChargingStationStop(self.id, destin[1], duration=300,flags=1) 
+    def recharge_substation(self,dest):                                              # dest vector = [station edge, station id]
+        traci.vehicle.changeTarget(self.id, dest[0])
+        traci.vehicle.setChargingStationStop(self.id, dest[1], duration=300,flags=1)
+        self.going_to_charge = True
         self.update_route() 
         return 
     
-    def stopParking(self,destin): # vetor = [id do estacionamento, id do estacionamento]
-        traci.vehicle.changeTarget(self.id, destin[0])
-        traci.vehicle.setParkingAreaStop(self.id, destin[1], duration=300)
+    def stopParking(self,dest):                                                      # dest vector = [parking_id, parking_id]
+        traci.vehicle.changeTarget(self.id, dest[0])
+        traci.vehicle.setParkingAreaStop(self.id, dest[1], duration=300)
         self.update_route()
         return
     
-    def returnfinaldestin(self):
+    def returnfinaldest(self):
         traci.vehicle.changeTarget(self.id, self.final_dest)
         self.update_route()
         return
 
-    def newroute(self,destin): #vetor = [id do destino,id da rota]
-        route = traci.simulation.findRoute(self.edge, destin[0], vType=self.type)
-        traci.route.add(destin[1], route.edges)
-        traci.vehicle.setRouteID(self.id, destin[1])
+    def newroute(self,dest):                                                         # destination vector = [destination id, route id]
+        route = traci.simulation.findRoute(self.edge, dest[0], vType=self.type)
+        traci.route.add(dest[1], route.edges)
+        traci.vehicle.setRouteID(self.id, dest[1])
         self.update_route()
         self.update_finalroute()
         return 
     
-    def create_route(self,destin): #vetor = [id do destino,id da rota]
-        route = traci.simulation.findRoute(destin[2], destin[0], vType=self.type)
-        traci.route.add(destin[1], route.edges)
+    def newdestin(self,dest):                                                       # destination vector = [destination id]                                          
+        traci.vehicle.changeTarget(self.id, dest[0])
+        self.update_route()
+        self.update_finalroute()
+        return 
+
+    def create_route(self,dest):                                                     # destination vector = [destination id, route id]
+        route = traci.simulation.findRoute(dest[2], dest[0], vType=self.type)
+        traci.route.add(dest[1], route.edges)
         
         return 
     
-    def step(self,action,destin) :
-        if action == "Seguir" :
+    def step(self, action, dest):
+        if self.id in traci.vehicle.getIDList():
             self.update_route()
+        else:
             return
         
-        elif action == "Carregar":
-            self.recharge_substation(destin)
+        if action == "Continue":
             return
         
-        elif action == "Estacionar":
-            self.stopParking(destin)
+        elif action == "Recharge":
+            
+            self.recharge_substation(dest)
             return
         
-        elif action == "Voltar ao destino final": 
-            self.returnfinaldestin()
+        elif action == "Park":
+            self.stopParking(dest)
             return
         
-        elif action == "Achar novo destino":
-            self.newroute(destin)
+        elif action == "Return to final destination":
+            self.returnfinaldest()
+            return
+        
+        elif action == "Find new destination":
+            self.newdestin(dest)
+            return
+        
+        elif action == "Find new route":
+            self.newroute(dest)
             return
 
+    def register(self,TIME):
+
+        self.update_route()
+        self.update_energy()
+        self.update_motion()
+        self.update_distances()
+
+        base_dir = Path(__file__).resolve().parent.parent  # volta para a raiz do projeto
+        pasta_results = base_dir / "sumo" / "results"
+        pasta_results.mkdir(parents=True, exist_ok=True)  # garante que a pasta existe
+        arquivo_csv = pasta_results / f"{self.id}.csv"
+
+        with open(arquivo_csv, mode="a", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            writer.writerow([
+                self.id,
+                self.speedKm,
+                self.edge,
+                self.total_dist,
+                self.dest,
+                self.dist_to_dest,
+                self.type,
+                self.soc,
+                TIME       
+            ])

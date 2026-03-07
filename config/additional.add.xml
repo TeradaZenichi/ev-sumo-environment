@@ -58,11 +58,11 @@
             emissionClass="Energy/unknown">
             
             <param key="has.battery.device" value="true"/>
-            <param key="device.battery.capacity" value="2000"/>
+            <param key="device.battery.capacity" value="80000"/>
             <param key="maximumPower" value="1000"/>
             <param key="frontSurfaceArea" value="5"/>
             <param key="airDragCoefficient" value="0.6"/>
-            <param key="rotatingMass" value="100"/>
+            <param key="rotatingMass" value="1000"/>
             <param key="radialDragCoefficient" value="0.5"/>
             <param key="rollDragCoefficient" value="0.01"/>
             <param key="constantPowerIntake" value="100"/>
@@ -76,7 +76,7 @@
     <!-- ================== BUS STOP ================== -->
 
     <busStop id="checkpoint1"
-             lane="pitagoras_2"
+             lane="-arquimedes_0"
              startPos="20"
              endPos="30"
              color="255,145,4">
@@ -84,7 +84,7 @@
     </busStop>
 
     <busStop id="checkpoint2"
-             lane="arquimedes_3"
+             lane="arquimedes_0"
              startPos="20"
              endPos="30"
              color="255,145,4">
@@ -92,7 +92,7 @@
     </busStop>
 
     <busStop id="checkpoint3"
-             lane="euler_0"
+             lane="ohm_0"
              startPos="20"
              endPos="30"
              color="255,145,4">
@@ -100,84 +100,161 @@
     </busStop>
     
     <busStop id="checkpoint4"
-             lane="sennaA_0"
+             lane="-ohm_0"
              startPos="20"
              endPos="30"
              color="255,145,4">
         <param key="emptyColor" value="1,1,1,0"/>
     </busStop>
+
 
     <busStop id="checkpoint5"
-             lane="sennaB_0"
-             startPos="20"
-             endPos="30"
+             lane="-joulesC_2"
+             startPos="450"
+             endPos="475"
              color="255,145,4">
         <param key="emptyColor" value="1,1,1,0"/>
     </busStop>
-
+    
     <busStop id="checkpoint6"
-             lane="-peleB_0"
-             startPos="20"
-             endPos="30"
+             lane="joulesC_2"
+             startPos="450"
+             endPos="475"
              color="255,145,4">
         <param key="emptyColor" value="1,1,1,0"/>
     </busStop>
     
-    <busStop id="checkpoint7"
-             lane="aveneueb_0"
-             startPos="20"
-             endPos="30"
-             color="255,145,4">
-        <param key="emptyColor" value="1,1,1,0"/>
-    </busStop>
-    
-    <busStop id="checkpoint8"
-             lane="peleB_0"
-             startPos="20"
-             endPos="30"
-             color="255,145,4">
-        <param key="emptyColor" value="1,1,1,0"/>
-    </busStop>
 
 
     <!-- ================== PARKING ================== -->
 
-    <parkingArea
+<parkingArea
         id="ParkAreaA"
-        lane="arquimedes_0"
-        startPos="15"
-        endPos="45"
-        roadsideCapacity="5"
+        lane="-joulesC_0"
+        startPos="225"
+        endPos="275"
+        roadsideCapacity="10"
         angle="0"
-        length="20"
+        length="5.0"
     />
 
     <parkingArea
         id="ParkAreaB"
-        lane="-joulestwo_0"
-        startPos="20"
-        endPos="90"
-        roadsideCapacity="7"
+        lane="joulesC_0"
+        startPos="225"
+        endPos="275"
+        roadsideCapacity="10"
         angle="0"
-        length="20"
+        length="5.0"
+    />
+
+    <parkingArea 
+            id="ParkAreaC" 
+            lane="-E133_0" 
+            startPos="5" 
+            endPos="25" 
+            roadsideCapacity="4" 
+            angle="0" 
+            length="4.5"
+    />
+
+    <parkingArea
+            id="ParkAreaD"
+            lane="-E131_0"
+            startPos="5"
+            endPos="25"
+            roadsideCapacity="4"
+            angle="0"
+            length="4.5"
     />
     
     <parkingArea
-        id="ParkAreaC"
-        lane="joulestwo_0"
-        startPos="20"
-        endPos="90"
-        roadsideCapacity="7"
+        id="ParkAreaE"
+        lane="E160_0"
+        startPos="2"
+        endPos="12"
+        roadsideCapacity="2"
         angle="0"
-        length="20"
+        length="4.5"
     />
+
+    <parkingArea
+        id="ParkAreaF"
+        lane="-E159_0"
+        startPos="2"
+        endPos="12"
+        roadsideCapacity="2"
+        angle="0"
+        length="4.5"
+    />
+
+    <parkingArea
+        id="ParkAreaG"
+        lane="E95_0"
+        startPos="10"
+        endPos="25"
+        roadsideCapacity="3"
+        angle="0"
+        length="4.5"
+    />
+
+    <parkingArea
+        id="ParkAreaH"
+        lane="E96_0"
+        startPos="10"
+        endPos="25"
+        roadsideCapacity="3"
+        angle="0"
+        length="4.5"
+    />
+
+    <parkingArea
+        id="ParkAreaI"
+        lane="-E94_0"
+        startPos="2"
+        endPos="18"
+        roadsideCapacity="3"
+        angle="0"
+        length="4.5"
+    />
+
+    <parkingArea
+        id="ParkAreaJ"
+        lane="E93_0"
+        startPos="2"
+        endPos="18"
+        roadsideCapacity="3"
+        angle="0"
+        length="4.5"
+    />
+
+    <parkingArea
+        id="ParkAreaK"
+        lane="E69_0"
+        startPos="10"
+        endPos="30"
+        roadsideCapacity="4"
+        angle="0"
+        length="4.5"
+    />
+    
+    <parkingArea
+        id="ParkAreaL"
+        lane="-E70_0"
+        startPos="10"
+        endPos="30"
+        roadsideCapacity="4"
+        angle="0"
+        length="4.5"
+    />
+
 
     <!-- ================== Charging Station ================== -->
     <chargingStation
-        id="Carregamento_1"
-        lane="arquimedes_0"
-        startPos="15"
-        endPos="45"
+        id="Charge_ParkA"
+        lane="joulesC_0"
+        startPos="250"
+        endPos="275"
         chargeDelay="2"
         chargeInTransit="0"
         power="200000"
@@ -185,10 +262,21 @@
     />
     
     <chargingStation
-        id="Carregamento_2"
-        lane="-joulestwo_0"
-        startPos="20"
-        endPos="90"
+        id="Charge_ParkB"
+        lane="-joulesC_0"
+        startPos="250"
+        endPos="275"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+<chargingStation
+        id="Charge_ParkC"
+        lane="-E133_0"
+        startPos="15"
+        endPos="25"
         chargeDelay="2"
         chargeInTransit="0"
         power="200000"
@@ -196,10 +284,98 @@
     />
 
     <chargingStation
-        id="Carregamento_3"
-        lane="joulestwo_0"
+        id="Charge_ParkD"
+        lane="-E131_0"
+        startPos="15"
+        endPos="25"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+    <chargingStation
+        id="Charge_ParkE"
+        lane="E160_0"
+        startPos="7"
+        endPos="12"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+    <chargingStation
+        id="Charge_ParkF"
+        lane="-E159_0"
+        startPos="7"
+        endPos="12"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+    <chargingStation
+        id="Charge_ParkG"
+        lane="E95_0"
         startPos="20"
-        endPos="90"
+        endPos="25"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+    <chargingStation
+        id="Charge_ParkH"
+        lane="E96_0"
+        startPos="20"
+        endPos="25"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+    <chargingStation
+        id="Charge_ParkI"
+        lane="-E94_0"
+        startPos="13"
+        endPos="18"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+    <chargingStation
+        id="Charge_ParkJ"
+        lane="E93_0"
+        startPos="13"
+        endPos="18"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+    <chargingStation
+        id="Charge_ParkK"
+        lane="E69_0"
+        startPos="20"
+        endPos="30"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+    <chargingStation
+        id="Charge_ParkL"
+        lane="-E70_0"
+        startPos="20"
+        endPos="30"
         chargeDelay="2"
         chargeInTransit="0"
         power="200000"

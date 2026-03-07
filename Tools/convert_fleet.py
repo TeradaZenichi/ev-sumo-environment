@@ -20,6 +20,7 @@ ARQUIVO_ENTRADA = config["route-files"]
 ARQUIVO_SAIDA   = config["route-mista"]
 
 def main():
+
     # 1. Verificar se o ficheiro original existe para evitar erros
     if not os.path.exists(ARQUIVO_ENTRADA):
         print(f"ERRO: O ficheiro '{ARQUIVO_ENTRADA}' não foi encontrado.")
@@ -43,15 +44,16 @@ def main():
             
             number = random.random()
             if number <= PROB_BUS_ELETRICO : 
-                linha = linha.replace('type="random"', 'type="ElectricBus"')
+                linha = linha.replace('type="random"', 'type="ElectricBus" color="255,255,0"')
                 contador_bus_e += 1
                 total_veiculos += 1
             elif PROB_BUS_ELETRICO< number <= PROB_CARRO_ELETRICO:
-                linha = linha.replace('type="random"', 'type="evehicle"')
+                linha = linha.replace('type="random"', 'type="evehicle" color="255,255,0"')
                 contador_car_e += 1
                 total_veiculos += 1
             else :
                 total_veiculos += 1
+                linha = linha.replace('type="random"','type="random" color="255,255,255"')
             
             f_out.write(linha)
 
