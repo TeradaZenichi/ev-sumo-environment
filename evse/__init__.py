@@ -50,7 +50,7 @@ class EVSE:
         self.transit = traci.chargingstation.getChargeInTransit(stationId)
         return
 
-    def get_edge(self, stationId):
+    def get_station_edge(self, stationId):
         """
         Returns the edge (road segment) where the charging station is located.
         This edge can be used directly with traci.vehicle.changeTarget().

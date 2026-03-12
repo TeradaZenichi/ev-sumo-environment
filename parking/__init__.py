@@ -14,6 +14,11 @@ class PARKING:
         self.veh = []            # IDs of parked vehicles
         self.veh_count = 0       # Number of vehicles in the parking
 
+        # -----------------------------
+        # Charging state
+        # -----------------------------
+        self.lane = None
+        self.edge = None
         pass
 
     def update(self):
@@ -29,3 +34,12 @@ class PARKING:
         # Total number of vehicles in the parking
         self.veh_count = traci.parkingarea.getVehicleCount(parkingId)
         return
+    
+    def get_parking_edge(self, parkingId):
+        """
+        Returns the edge (road segment) where the parking area is located.
+        This edge can be used with traci.vehicle.changeTarget().
+        """
+        self.lane = traci.parkingarea.getLaneID(parkingId)
+        self.edge = traci.lane.getEdgeID(self.lane)
+        return 

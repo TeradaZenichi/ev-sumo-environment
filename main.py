@@ -20,7 +20,6 @@ def main():
     chargers = EVSE()  # cria objeto da classe EVSE
     park = PARKING()
     evs = []
-    contador = 0
 
     for id in vehicles:
         ev = EV(id, vehicles[id]["type"], ['E103',"ROTA DA POLICIA",'E165'])
@@ -30,7 +29,12 @@ def main():
     
     chargers.update()
     W = random.choice(chargers.ids)
-    chargers.get_edge(W)
+    chargers.get_station_edge(W)
+
+
+    park.update()
+    L = random.choice(park.ids)
+    park.get_parking_edge(L)
 
     edges = traci.edge.getIDList()
 
@@ -41,20 +45,26 @@ def main():
             ruas.add(edge.split("_")[0])
 
     while traci.simulation.getTime() < simulation.max_time:
-
-        # if not ev.edge.startswith(":"):
-        #         rua = ev.edge.split("_")[0]
         ev.step("Continue",[])
         ev.register(traci.simulation.getTime())
 
-        if ev.soc < 20 and not(ev.going_to_charge):
-            ev.step("Recharge", [chargers.edge,w])
-        elif ev.penultimate_dest == ev.edge:
-            contador+=1
-            w= random.choice([x for x in ruas if x != ev.final_dest])
-            route_id = f"route_{ev.id}_{contador}"
-            ev.step("Find new route", [w,route_id])
+        if ev.soc <50 and not("charging station" in ev.stop()):
+            ev.step("Recharge", [chargers.edge,W])
 
+        if ev.soc == 80 : 
+            ev.step("Park", [park.edge,L])
+        
+        if "parking" in ev.stop() or "charging station" in ev.stop():
+            ev.step("Return to final destination", [])
+
+        if config["destin flag"] == "True":
+            if ev.penultimate_dest == ev.edge:
+                w= random.choice([x for x in ruas if x != ev.final_dest])
+                ev.step("Find new route", [w])
+        else : 
+            if ev.final_dest == ev.edge:  
+                w= random.choice([x for x in ruas if x != ev.final_dest])
+                ev.step("Find new route from the final edge", [w])
 
         traci.simulationStep()
 

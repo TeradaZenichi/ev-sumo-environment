@@ -24,7 +24,6 @@ class EV:
         self.energy_regen = 0.0                                                     # Total regenerated energy (kWh)
         self.capacity = 0.0                                                         # Total battery capacity (kWh)
         self.soc = 0.0                                                              # State of charge (%)
-        self.going_to_charge = False
 
         # -----------------------------
         # Location and route
@@ -152,47 +151,88 @@ class EV:
         self.total_dist = round(traci.vehicle.getDistance(self.id), 2)
         return
     
+    def color(self):     
+        if self.soc  <= 14:
+            color = (255, 0, 0, 255)      # Vermelho Crítico
+        elif self.soc  <= 28:
+            color =  (255, 69, 0, 255)     # Laranja Avermelhado
+        elif self.soc  <= 42:
+            color = (255, 165, 0, 255)    # Laranja (Alerta)
+        elif self.soc  <= 56:
+            color = (255, 255, 0, 255)    # Amarelo (Intermediário)
+        elif self.soc  <= 70:
+            color = (173, 255, 47, 255)    # Verde Amarelado
+        elif self.soc  <= 85:
+            color = (127, 255, 0, 255)    # Verde Claro
+        else:
+            color = (0, 255, 0, 255)      # Verde (Cheio)
+        
+        traci.vehicle.setColor(self.id, color)
+        return
+        
     def recharge_substation(self,dest):                                              # dest vector = [station edge, station id]
         traci.vehicle.changeTarget(self.id, dest[0])
         traci.vehicle.setChargingStationStop(self.id, dest[1], duration=300,flags=1)
-        self.going_to_charge = True
         self.update_route() 
         return 
     
-    def stopParking(self,dest):                                                      # dest vector = [parking_id, parking_id]
+    def stopParking(self,dest):                                                      # dest vector = [parking edge, parking_id]
         traci.vehicle.changeTarget(self.id, dest[0])
         traci.vehicle.setParkingAreaStop(self.id, dest[1], duration=300)
         self.update_route()
         return
     
-    def returnfinaldest(self):
+    def returnfinaldest(self):                                             
         traci.vehicle.changeTarget(self.id, self.final_dest)
-        self.update_route()
+        self.update_finalroute()
         return
 
-    def newroute(self,dest):                                                         # destination vector = [destination id, route id]
-        route = traci.simulation.findRoute(self.edge, dest[0], vType=self.type)
-        traci.route.add(dest[1], route.edges)
-        traci.vehicle.setRouteID(self.id, dest[1])
+    def newroute(self,dest):                                                         # destination vector = [destination id]
+        
+        current_route = traci.vehicle.getRoute(self.id)
+
+        route = traci.simulation.findRoute(self.final_dest, dest[0], vType=self.type)
+        
+        if self.penultimate_dest != self.final_dest:
+            new_route = [current_route[-2]] + [current_route[-1]] + list(route.edges)[1:]
+        else : 
+            new_route = [current_route[-1]] + list(route.edges)[1:]
+
+        traci.vehicle.setRoute(self.id, new_route)
+
         self.update_route()
         self.update_finalroute()
         return 
     
+    def newroute_finaldest(self,dest): # destination vector = [destination id]. 
+        '''Use this function when you want to create a new route for a long streets and the final street is the conditional.'''
+        route = traci.simulation.findRoute(self.edge, dest[0], vType=self.type)
+
+        if route.edges:
+            traci.vehicle.setRoute(self.id, route.edges)
+
+        self.update_route()
+        self.update_finalroute()
+        return
+
     def newdestin(self,dest):                                                       # destination vector = [destination id]                                          
         traci.vehicle.changeTarget(self.id, dest[0])
         self.update_route()
         self.update_finalroute()
         return 
 
-    def create_route(self,dest):                                                     # destination vector = [destination id, route id]
+
+    def create_route(self,dest):                                                     # destination vector = [destination id, route id,edge initial]
         route = traci.simulation.findRoute(dest[2], dest[0], vType=self.type)
         traci.route.add(dest[1], route.edges)
-        
         return 
+    
+
     
     def step(self, action, dest):
         if self.id in traci.vehicle.getIDList():
             self.update_route()
+            self.color()
         else:
             return
         
@@ -200,7 +240,6 @@ class EV:
             return
         
         elif action == "Recharge":
-            
             self.recharge_substation(dest)
             return
         
@@ -219,7 +258,9 @@ class EV:
         elif action == "Find new route":
             self.newroute(dest)
             return
-
+        elif action == "Find new route from the final edge":
+            self.newroute_finaldest(dest)
+            return
     def register(self,TIME):
 
         self.update_route()

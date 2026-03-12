@@ -14,8 +14,9 @@
     "convert-fleet" : "Tools/convert_fleet.py",
 
     "period": "1",
-    "delay": "20",
+    "delay": "80",
     "step": "0.5",
-    "Max_time" : 100000
+    "Max_time" : 100000,
+    "destin flag" : "False"
     
 }
