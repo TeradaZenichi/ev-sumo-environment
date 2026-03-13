@@ -152,23 +152,28 @@ class EV:
         return
     
     def color(self):     
-        if self.soc  <= 14:
-            color = (255, 0, 0, 255)      # Vermelho Crítico
-        elif self.soc  <= 28:
-            color =  (255, 69, 0, 255)     # Laranja Avermelhado
-        elif self.soc  <= 42:
-            color = (255, 165, 0, 255)    # Laranja (Alerta)
-        elif self.soc  <= 56:
-            color = (255, 255, 0, 255)    # Amarelo (Intermediário)
-        elif self.soc  <= 70:
-            color = (173, 255, 47, 255)    # Verde Amarelado
-        elif self.soc  <= 85:
-            color = (127, 255, 0, 255)    # Verde Claro
+        if self.soc <= 10:
+            color = (139, 0, 0, 255)        # Vermelho Escuro (Crítico extremo)
+        elif self.soc <= 20:
+            color = (255, 0, 0, 255)        # Vermelho
+        elif self.soc <= 30:
+            color = (255, 69, 0, 255)       # Laranja avermelhado
+        elif self.soc <= 40:
+            color = (255, 140, 0, 255)      # Laranja escuro
+        elif self.soc <= 50:
+            color = (255, 165, 0, 255)      # Laranja
+        elif self.soc <= 60:
+            color = (255, 215, 0, 255)      # Amarelo dourado
+        elif self.soc <= 70:
+            color = (255, 255, 0, 255)      # Amarelo
+        elif self.soc <= 80:
+            color = (173, 255, 47, 255)     # Verde amarelado
+        elif self.soc <= 90:
+            color = (127, 255, 0, 255)      # Verde claro
         else:
-            color = (0, 255, 0, 255)      # Verde (Cheio)
+            color = (0, 255, 0, 255)        # Verde (bateria cheia)
         
         traci.vehicle.setColor(self.id, color)
-        return
         
     def recharge_substation(self,dest):                                              # dest vector = [station edge, station id]
         traci.vehicle.changeTarget(self.id, dest[0])
@@ -180,6 +185,10 @@ class EV:
         traci.vehicle.changeTarget(self.id, dest[0])
         traci.vehicle.setParkingAreaStop(self.id, dest[1], duration=300)
         self.update_route()
+        return
+    
+    def skip_stop(self):
+        traci.vehicle.resume(self.id)
         return
     
     def returnfinaldest(self):                                             
@@ -251,6 +260,10 @@ class EV:
             self.returnfinaldest()
             return
         
+        elif action == "Skip stop":
+            self.skip_stop()
+            return
+        
         elif action == "Find new destination":
             self.newdestin(dest)
             return
@@ -261,6 +274,7 @@ class EV:
         elif action == "Find new route from the final edge":
             self.newroute_finaldest(dest)
             return
+    
     def register(self,TIME):
 
         self.update_route()

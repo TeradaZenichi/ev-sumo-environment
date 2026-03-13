@@ -1,13 +1,21 @@
 import traci
 
 class EVSE:
-    def __init__(self):
+    def __init__(self,id:str):
         # -----------------------------
         # Station identification
         # -----------------------------
-        self.ids = []            # List of charging station IDs
-        self.count = 0           # Total number of stations
-
+        self.id = id            # List of charging station IDs
+        
+        # =========================================================
+        # Localização na rede
+        # =========================================================
+        self.lane = traci.chargingstation.getLaneID(self.id)                # Lane onde a estação está localizada
+        self.edge = traci.lane.getEdgeID(self.lane)                         # Edge correspondente
+        self.startPos = traci.chargingstation.getStartPos(self.id)          # Início da estação na lane (metros)
+        self.endPos =traci.chargingstation.getEndPos(self.id)               # Fim da estação na lane (metros)
+        
+        
         # -----------------------------
         # Vehicles charging
         # -----------------------------
@@ -20,41 +28,30 @@ class EVSE:
         self.power = 0.0         # Current charging power (W)
         self.eff = 0.0           # Station efficiency (%)
 
-        # -----------------------------
-        # Charging state
-        # -----------------------------
-        self.transit = 0         # 0 = not allowed, 1 = allows charging while moving
-        self.lane = None
-        self.edge = None
+        # =========================================================
+        # Parâmetros operacionais
+        # =========================================================
+        self.delay = 0.0            # Delay antes do carregamento iniciar
+        self.transit = 0            # 0 = not allowed, 1 = allows charging while moving
+        
+
 
         pass
-
-    def update(self):
-        # List of available stations
-        self.ids = traci.chargingstation.getIDList()
-        self.count = len(self.ids)
-        return
     
-    def status(self, stationId):
+    def status(self):
         # Vehicles connected to the station
-        self.veh = traci.chargingstation.getVehicleIDs(stationId)
-        self.veh_count = traci.chargingstation.getVehicleCount(stationId)
+        self.veh = traci.chargingstation.getVehicleIDs(self.id)
+        self.veh_count = traci.chargingstation.getVehicleCount(self.id)
 
         # Charging power
-        self.power = traci.chargingstation.getChargingPower(stationId)
+        self.power = traci.chargingstation.getChargingPower(self.id)
 
         # Station efficiency
-        self.eff = traci.chargingstation.getEfficiency(stationId)
+        self.eff = traci.chargingstation.getEfficiency(self.id)
+        
+        # Delay para iniciar o carregamento
+        self.delay = traci.chargingstation.getChargeDelay(self.id)
 
         # Charging while moving
-        self.transit = traci.chargingstation.getChargeInTransit(stationId)
-        return
-
-    def get_station_edge(self, stationId):
-        """
-        Returns the edge (road segment) where the charging station is located.
-        This edge can be used directly with traci.vehicle.changeTarget().
-        """
-        self.lane = traci.chargingstation.getLaneID(stationId)
-        self.edge = traci.lane.getEdgeID(self.lane)
+        self.transit = traci.chargingstation.getChargeInTransit(self.id)
         return

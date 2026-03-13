@@ -17,25 +17,17 @@ with open('config/vehicles.json', "r", encoding="utf-8") as f:
 def main():
 
     simulation = Sumo(config,vehicles)   # cria objeto da classe Sumo
-    chargers = EVSE()  # cria objeto da classe EVSE
-    park = PARKING()
+    chargers = EVSE("Charge_ParkD")  # cria objeto da classe EVSE
+    park = PARKING("ParkAreaC")
     evs = []
 
+    Key = 0
     for id in vehicles:
         ev = EV(id, vehicles[id]["type"], ['E103',"ROTA DA POLICIA",'E165'])
         evs.append(ev)
     
     simulation.setup_results_and_headers()
     
-    chargers.update()
-    W = random.choice(chargers.ids)
-    chargers.get_station_edge(W)
-
-
-    park.update()
-    L = random.choice(park.ids)
-    park.get_parking_edge(L)
-
     edges = traci.edge.getIDList()
 
     ruas = set()
@@ -49,14 +41,21 @@ def main():
         ev.register(traci.simulation.getTime())
 
         if ev.soc <50 and not("charging station" in ev.stop()):
-            ev.step("Recharge", [chargers.edge,W])
+            ev.step("Recharge", [chargers.edge,chargers.id])
 
-        if ev.soc == 80 : 
-            ev.step("Park", [park.edge,L])
-        
+        if ev.soc == 80 :
+            ev.step("Park", [park.edge,park.id])
+
         if "parking" in ev.stop() or "charging station" in ev.stop():
             ev.step("Return to final destination", [])
 
+            if "parking" in ev.stop() and "charging station" not in ev.stop() :
+                Key +=1
+                print(Key)
+                if Key == 10 :
+                    ev.step("Skip stop",[]) 
+
+            
         if config["destin flag"] == "True":
             if ev.penultimate_dest == ev.edge:
                 w= random.choice([x for x in ruas if x != ev.final_dest])
