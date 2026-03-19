@@ -2,22 +2,22 @@
 <city>
     
     <general
-        inhabitants="65000"
-        households="29000"
+        inhabitants="1000"
+        households="300"
         childrenAgeLimit="18"
         retirementAgeLimit="65"
         carRate="0.87"
         unemploymentRate="0.05"
         footDistanceLimit="2000"
-        incomingTraffic="50000"
-        outgoingTraffic="15000"
+        incomingTraffic="2000"
+        outgoingTraffic="300"
     />
 
     <population>
-        <bracket beginAge="0" endAge="9" peopleNbr="5222" />
-        <bracket beginAge="10" endAge="19" peopleNbr="6238" />
-        <bracket beginAge="20" endAge="65" peopleNbr="40700" />
-        <bracket beginAge="66" endAge="100" peopleNbr="12840" />
+        <bracket beginAge="0" endAge="9" peopleNbr="100" />
+        <bracket beginAge="10" endAge="19" peopleNbr="200" />
+        <bracket beginAge="20" endAge="65" peopleNbr="600" />
+        <bracket beginAge="66" endAge="100" peopleNbr="100" />
     </population>
 
     <parameters
