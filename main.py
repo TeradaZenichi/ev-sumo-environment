@@ -40,7 +40,7 @@ def main():
         ev.step("Continue",[])
         ev.register(traci.simulation.getTime())
 
-        if ev.soc ==30 and not("charging station" in ev.stop()):
+        if ev.soc ==50 and not("charging station" in ev.stop()):
             ev.step("Recharge", [chargers.edge,chargers.id])
 
         if ev.soc == 85 :
