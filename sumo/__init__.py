@@ -17,10 +17,13 @@ class Sumo:
         self.config = config
         self.veh = list(vehicles.keys())
         
+        
         self.uptime()
         self.generate_activity_trips()
         self.apply_fleet_conversion()
         self.startSim()
+        self.total_network_length()
+
         pass
 
     def upveh(self,ID):
@@ -142,5 +145,14 @@ class Sumo:
             ]
         )
     
-
+    def total_network_length(self):
+        total_length = 0.0
+    
+        edges = traci.edge.getIDList()
+    
+        for edge in edges:
+            total_length += traci.edge.getLength(edge)
+        
+        self.total_length = total_length
+        return
     

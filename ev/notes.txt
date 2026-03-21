@@ -1,0 +1,11 @@
+# 12 bits
+
+0° - "Continue"
+1° - "Find new destination"
+2° - "Find new route"
+3° - "Find new route from the final edge"
+5
+4° - "Return to final destination"
+5° - "Skip stop"
+6° - "Park"
+7° - "Recharge"

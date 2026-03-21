@@ -21,9 +21,8 @@ def main():
     park = PARKING("ParkAreaC")
     evs = []
 
-    Key = 0
     for id in vehicles:
-        ev = EV(id, vehicles[id]["type"], ['E103',"ROTA DA POLICIA",'E165'])
+        ev = EV(id, vehicles[id]["type"], ['E103',"ROTA DA POLICIA",'E165'],simulation.total_length)
         evs.append(ev)
     
     simulation.setup_results_and_headers()
