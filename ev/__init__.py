@@ -80,11 +80,46 @@ class EV:
         self.total_length   = total_length                                          # Total network lengh
 
         # -----------------------------
-        # Initial initialization
-        # -----------------------------  
-        self.up.general_up()
-        self.up.update_finalroute()
+        # ID list
+        # -----------------------------
+        self.parkings = traci.parkingarea.getIDList()
+        self.stations = traci.chargingstation.getIDList()
 
+        # -----------------------------
+        # Charging stations (EVSE)
+        # -----------------------------
+        self.station_edges = {
+            s: traci.chargingstation.getLaneID(s).split("_")[0]
+            for s in self.stations
+        }
+
+        self.station_pos = {
+            s: traci.chargingstation.getStartPos(s)
+            for s in self.stations
+        }
+
+        station_edges_set = set(self.station_edges.values())
+
+        # -----------------------------
+        # Parkings
+        # -----------------------------
+        self.parking_edges = {}
+        self.parking_pos = {}
+
+        for p in self.parkings:
+            lane_id = traci.parkingarea.getLaneID(p)
+            edge_id = lane_id.split("_")[0]
+
+            if edge_id in station_edges_set:
+                continue
+
+            self.parking_edges[p] = edge_id
+            self.parking_pos[p] = traci.parkingarea.getStartPos(p)
+
+        # -----------------------------
+        # Initial initialization
+        # -----------------------------
+        self.up.all_up()
         pass
         
     class Update :
@@ -178,12 +213,69 @@ class EV:
 
             return
         
+        def distances_to_parkings(self):
+            ev = self.ev
+
+            if ev.edge == "" or ev.edge.startswith(":"):
+                return {park: np.inf for park in ev.parkings}
+
+            distances = {}
+
+            for parking in ev.parkings:
+                edge_id = ev.parking_edges[parking]
+                pos = ev.parking_pos[parking]
+
+                dist = traci.simulation.getDistanceRoad(
+                    ev.edge,
+                    ev.current_pos,
+                    edge_id,
+                    pos,
+                    isDriving=True
+                )
+
+                distances[parking] = np.inf if dist < 0 else round(dist, 2)
+
+            return distances
+        
+        def distances_to_stations(self):
+            ev = self.ev
+
+            if ev.edge == "" or ev.edge.startswith(":"):
+                return {station: np.inf for station in ev.stations}
+
+            distances = {}
+
+            for evse in ev.stations:
+                edge_id = ev.station_edges[evse]
+                pos = ev.station_pos[evse]
+
+                dist = traci.simulation.getDistanceRoad(
+                    ev.edge,
+                    ev.current_pos,
+                    edge_id,
+                    pos,
+                    isDriving=True
+                )
+
+                distances[evse] = np.inf if dist < 0 else round(dist, 2)
+
+            return distances
+        
         def general_up(self): 
             self.update_energy()
             self.update_motion()
-            self.update_distances()
             self.update_route()
-
+            self.update_distances()
+            
+            return
+        
+        def all_up(self): 
+            self.update_energy()
+            self.update_motion()
+            self.update_route()
+            self.update_finalroute()
+            self.update_distances()
+            
             return
 
         pass
@@ -375,6 +467,8 @@ class EV:
 
     def get_obs(self):
 
+
+        # Pode usar uma possível maior distância percorrida em um trajeto
         obs = [
             self.speed /  self.max_speed,
             self.acceleration / self.max_accel,

@@ -250,21 +250,11 @@
 
 
     <!-- ================== Charging Station ================== -->
+
     <chargingStation
         id="Charge_ParkA"
-        lane="joulesC_0"
-        startPos="250"
-        endPos="275"
-        chargeDelay="2"
-        chargeInTransit="0"
-        power="200000"
-        efficiency="0.95"
-    />
-    
-    <chargingStation
-        id="Charge_ParkB"
         lane="-joulesC_0"
-        startPos="250"
+        startPos="225"
         endPos="275"
         chargeDelay="2"
         chargeInTransit="0"
@@ -272,10 +262,21 @@
         efficiency="0.95"
     />
 
-<chargingStation
+    <chargingStation
+        id="Charge_ParkB"
+        lane="joulesC_0"
+        startPos="225"
+        endPos="275"
+        chargeDelay="2"
+        chargeInTransit="0"
+        power="200000"
+        efficiency="0.95"
+    />
+
+    <chargingStation
         id="Charge_ParkC"
         lane="-E133_0"
-        startPos="15"
+        startPos="5"
         endPos="25"
         chargeDelay="2"
         chargeInTransit="0"
@@ -286,7 +287,7 @@
     <chargingStation
         id="Charge_ParkD"
         lane="-E131_0"
-        startPos="15"
+        startPos="5"
         endPos="25"
         chargeDelay="2"
         chargeInTransit="0"
@@ -297,7 +298,7 @@
     <chargingStation
         id="Charge_ParkE"
         lane="E160_0"
-        startPos="7"
+        startPos="2"
         endPos="12"
         chargeDelay="2"
         chargeInTransit="0"
@@ -308,78 +309,12 @@
     <chargingStation
         id="Charge_ParkF"
         lane="-E159_0"
-        startPos="7"
+        startPos="2"
         endPos="12"
         chargeDelay="2"
         chargeInTransit="0"
         power="200000"
         efficiency="0.95"
     />
-
-    <chargingStation
-        id="Charge_ParkG"
-        lane="E95_0"
-        startPos="20"
-        endPos="25"
-        chargeDelay="2"
-        chargeInTransit="0"
-        power="200000"
-        efficiency="0.95"
-    />
-
-    <chargingStation
-        id="Charge_ParkH"
-        lane="E96_0"
-        startPos="20"
-        endPos="25"
-        chargeDelay="2"
-        chargeInTransit="0"
-        power="200000"
-        efficiency="0.95"
-    />
-
-    <chargingStation
-        id="Charge_ParkI"
-        lane="-E94_0"
-        startPos="13"
-        endPos="18"
-        chargeDelay="2"
-        chargeInTransit="0"
-        power="200000"
-        efficiency="0.95"
-    />
-
-    <chargingStation
-        id="Charge_ParkJ"
-        lane="E93_0"
-        startPos="13"
-        endPos="18"
-        chargeDelay="2"
-        chargeInTransit="0"
-        power="200000"
-        efficiency="0.95"
-    />
-
-    <chargingStation
-        id="Charge_ParkK"
-        lane="E69_0"
-        startPos="20"
-        endPos="30"
-        chargeDelay="2"
-        chargeInTransit="0"
-        power="200000"
-        efficiency="0.95"
-    />
-
-    <chargingStation
-        id="Charge_ParkL"
-        lane="-E70_0"
-        startPos="20"
-        endPos="30"
-        chargeDelay="2"
-        chargeInTransit="0"
-        power="200000"
-        efficiency="0.95"
-    />
-
+    
 </additional>

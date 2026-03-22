@@ -147,12 +147,19 @@ class Sumo:
     
     def total_network_length(self):
         total_length = 0.0
-    
-        edges = traci.edge.getIDList()
-    
-        for edge in edges:
-            total_length += traci.edge.getLength(edge)
-        
+
+        for edge in traci.edge.getIDList():
+
+            # ignora edges internas (junções)
+            if edge.startswith(":"):
+                continue
+            
+            # pega qualquer lane válida da edge
+            lane_id = f"{edge}_0"
+
+            total_length += traci.lane.getLength(lane_id)
+
         self.total_length = total_length
-        return
+        
+        return self.total_length
     
