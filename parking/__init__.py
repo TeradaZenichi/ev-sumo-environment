@@ -1,7 +1,7 @@
 import traci
 
 class PARKING:
-    def __init__(self, id: str):
+    def __init__(self, id: str): #posição
         # -----------------------------
         # Parking identification
         # -----------------------------

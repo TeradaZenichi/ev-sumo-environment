@@ -20,7 +20,7 @@ def main():
     chargers = EVSE("Charge_ParkD")  # cria objeto da classe EVSE
     park = PARKING("ParkAreaC")
     evs = []
-    comprimento = simulation.total_network_length()
+    comprimento = simulation.refdist
 
     for id in vehicles:
         ev = EV(id, vehicles[id]["type"], ['E103',"ROTA DA POLICIA",'E165'],comprimento)
@@ -28,22 +28,15 @@ def main():
     
     simulation.setup_results_and_headers()
     
-    edges = traci.edge.getIDList()
-
-    ruas = set()
-
-    for edge in edges:
-        if not edge.startswith(":"):  # ignora edges internas
-            ruas.add(edge.split("_")[0])
-
     while traci.simulation.getTime() < simulation.max_time:
         ev.up.general_up()
         ev.step([1,0,0,0,0,0,0,0],[])
 
         if ev.edge == ev.penultimate_dest : 
-            w= random.choice([x for x in ruas if x != ev.final_dest])
+            w= random.choice([x for x in simulation.streets if x != ev.final_dest])
             ev.step([0,0,1,0,0,0,0,0],[w])
             ev.up.all_up()
+        
         
         traci.simulationStep()
 

@@ -4,7 +4,7 @@ from pathlib import Path
 import csv
 
 class EV:
-    def __init__(self, id:str,type:str,dest:str, total_length):
+    def __init__(self, id:str,type:str,dest:str, reflength):
         # -----------------------------
         # Vehicle identification
         # -----------------------------
@@ -77,7 +77,7 @@ class EV:
         self.total_dist    = np.inf                                                 # Total distance traveled (m)
         self.current_pos   = np.inf                                                 # Vehicle position in lane
         self.dist_to_local = np.inf                                                 # Distance to specific location(m)
-        self.total_length   = total_length                                          # Total network lengh
+        self.reflength   = reflength                                                # Total network lengh
 
         # -----------------------------
         # ID list
@@ -473,8 +473,8 @@ class EV:
             self.speed /  self.max_speed,
             self.acceleration / self.max_accel,
             self.soc/100,
-            self.dist_to_dest / self.total_length,
-            self.dist_to_final / self.total_length,
+            self.dist_to_dest / self.reflength,
+            self.dist_to_final / self.reflength,
             min(self.gap / 50, 1)
         ]
         return obs
