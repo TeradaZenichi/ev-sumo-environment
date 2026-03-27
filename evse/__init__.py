@@ -5,16 +5,15 @@ class EVSE:
         # -----------------------------
         # Station identification
         # -----------------------------
-        self.id = id            # List of charging station IDs
+        self.id = id            # Charging station ID
         
-        # =========================================================
-        # Localização na rede
-        # =========================================================
-        self.lane = traci.chargingstation.getLaneID(self.id)                # Lane onde a estação está localizada
-        self.edge = traci.lane.getEdgeID(self.lane)                         # Edge correspondente
-        self.startPos = traci.chargingstation.getStartPos(self.id)          # Início da estação na lane (metros)
-        self.endPos =traci.chargingstation.getEndPos(self.id)               # Fim da estação na lane (metros)
-        
+        # -----------------------------
+        # Network location
+        # -----------------------------
+        self.lane = traci.chargingstation.getLaneID(self.id)                # Lane where the station is located
+        self.edge = traci.lane.getEdgeID(self.lane)                         # Corresponding edge
+        self.startPos = traci.chargingstation.getStartPos(self.id)          # Start position of the station on the lane (meters)
+        self.endPos = traci.chargingstation.getEndPos(self.id)              # End position of the station on the lane (meters)
         
         # -----------------------------
         # Vehicles charging
@@ -28,13 +27,11 @@ class EVSE:
         self.power = 0.0         # Current charging power (W)
         self.eff = 0.0           # Station efficiency (%)
 
-        # =========================================================
-        # Parâmetros operacionais
-        # =========================================================
-        self.delay = 0.0            # Delay antes do carregamento iniciar
-        self.transit = 0            # 0 = not allowed, 1 = allows charging while moving
-        
-
+        # -----------------------------
+        # Operational parameters
+        # -----------------------------
+        self.delay = 0.0         # Delay before charging starts
+        self.transit = 0         # 0 = not allowed, 1 = allows charging while moving
 
         pass
     
@@ -49,7 +46,7 @@ class EVSE:
         # Station efficiency
         self.eff = traci.chargingstation.getEfficiency(self.id)
         
-        # Delay para iniciar o carregamento
+        # Delay before charging starts
         self.delay = traci.chargingstation.getChargeDelay(self.id)
 
         # Charging while moving

@@ -8,7 +8,7 @@ class EV:
         # -----------------------------
         # Vehicle identification
         # -----------------------------
-        self.id = id                                                                # Unique vehicle ID
+        self.id = id                                                                # Vehicle ID
         self.type = type                                                            # Vehicle type
 
         # -----------------------------
@@ -333,7 +333,7 @@ class EV:
                 traci.vehicle.setRoute(ev.id, route.edges)
             return
 
-        def newdestin(self,dest):                                                       # destination vector = [destination id]                                          
+        def newdestin(self,dest):                                                        # destination vector = [destination id]                                          
             ev = self.ev
             
             traci.vehicle.changeTarget(ev.id, dest[0])
@@ -410,17 +410,43 @@ class EV:
         
         pass
            
-    class Registers : 
-    
+    class Registers: 
+        
         def __init__(self, ev):
             self.ev = ev
-           
+        
             base_dir = Path(__file__).resolve().parent.parent 
             self.pasta_results = base_dir / "sumo" / "results"
             self.pasta_results.mkdir(parents=True, exist_ok=True) 
+            
             self.arquivo_csv = self.pasta_results / f"{ev.id}.csv"
 
-        def register(self,TIME):
+            self.setup_results_and_headers()
+            
+        def setup_results_and_headers(self):
+
+            # Remove only this EV's CSV file (if it exists)
+            if self.arquivo_csv.exists():
+                self.arquivo_csv.unlink()
+
+            cabecalho = [
+                "== ID ==",
+                "== Velocity (km/h) ==",
+                "== Current route ==",
+                "== Distance traveled (m) ==",
+                "== Destination ==",
+                "== Distance to destination (m) ==",
+                "== Type ==",
+                "== Battery level (%) ==",
+                "== Timestamp =="
+            ]
+
+            # Create file and write header
+            with open(self.arquivo_csv, mode="w", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                writer.writerow(cabecalho)
+
+        def register(self, TIME):
             ev = self.ev
 
             with open(self.arquivo_csv, mode="a", newline="", encoding="utf-8") as file:
@@ -437,10 +463,8 @@ class EV:
                     TIME       
                 ])
         
-        pass
-
-        """Add vehicle"""
-    def _addveh(self,dest):                                                         # dest vector = [destination_edge, route_id]
+    """Add vehicle"""
+    def _addveh(self,dest):                                                              # dest vector = [destination_edge, route_id]
         self.action.create_route(dest)
 
         traci.vehicle.add(
@@ -466,9 +490,6 @@ class EV:
         return
 
     def get_obs(self):
-
-
-        # Pode usar uma possível maior distância percorrida em um trajeto
         obs = [
             self.speed /  self.max_speed,
             self.acceleration / self.max_accel,

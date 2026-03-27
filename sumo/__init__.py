@@ -1,12 +1,12 @@
 import traci
 import random
 from sumolib import checkBinary
-from pathlib import Path
-import csv
 import subprocess
 import sys
 import os
 
+# Fix random seed for reproducibility
+random.seed(42)
 
 class Sumo:
 
@@ -18,74 +18,34 @@ class Sumo:
         self.config = config
         self.veh = list(vehicles.keys())
         self.refdist = 0.0
-        
+        self.edges = [] 
+        self.streets = set()       
+
+        pass
+
+    def run(self): 
+
+        #Control
         self.uptime()
         self.generate_activity_trips()
         self.apply_fleet_conversion()
         self.startSim()
 
-
-        self.edges = traci.edge.getIDList()
-        
-        self.streets = set()
-        
-        
-        for edge in self.edges:
-            if not edge.startswith(":"):  # ignore internal edges 
-                self.streets.add(edge.split("_")[0])
-
+        #Surface
+        self.up_streets()
         self.streetslist = list(self.streets)
+        self.reference_length()
 
-
-        self.refence_length()
-        
-        pass
-
-    def upveh(self,ID):
-        self.veh = ID
         return
     
     def uptime(self):
         self.max_time = self.config["Max_time"]
         return self.max_time
     
-    def setup_results_and_headers(self):
-
-        list_vehicles = self.veh
-
-        base_dir = Path(__file__).resolve().parent
-        pasta_results = base_dir / "results"
-        
-        if not pasta_results.exists():
-            pasta_results.mkdir(parents=True, exist_ok=True)
-        else:
-            for item in pasta_results.iterdir():
-
-                if item.is_file():
-                    item.unlink()
-
-        cabecalho = [
-            "== ID ==",
-            "== Velocity (Kh/h) ==",
-            "== Atual route ==",
-            "== Distance traveled(m) ==",
-            "== Destination ==",
-            "== Distance from destination(m) ==",
-            "== TYPE ==",
-            "== Batery level(%) ==",
-            "== timestamp =="
-        ]
-
-        for veiculo_id in list_vehicles:
-            arquivo_csv = pasta_results / f"{veiculo_id}.csv"
-            
-            with open(arquivo_csv, mode="w", newline="", encoding="utf-8") as file:
-                writer = csv.writer(file)
-                writer.writerow(cabecalho)
-
     def generate_activity_trips(self):
-        # O activitygen costuma estar no mesmo diretório do sumo
-        # Se 'activitygen' não estiver no PATH, use o caminho completo
+        
+        # activitygen is usually located in the same directory as SUMO
+        # If 'activitygen' is not in the PATH, use the full path
         activitygen_bin = "activitygen" 
 
         cmd = [
@@ -98,48 +58,48 @@ class Sumo:
         ]
         
         try:
-            print(f"Executando: {' '.join(cmd)}")
+            print(f"Executing: {' '.join(cmd)}")
             subprocess.run(cmd, check=True)
-            print("✓ Rotas baseadas em atividades geradas com sucesso!")
+            print("✓ Activity-based routes generated successfully!")
         except subprocess.CalledProcessError as e:
-            print(f"Erro ao executar activitygen: {e}")
+            print(f"Error while executing activitygen: {e}")
         except FileNotFoundError:
-            print("Erro: O executável 'activitygen' não foi encontrado no PATH.")
+            print("Error: 'activitygen' executable not found in PATH.")
 
     def apply_fleet_conversion(self):
         """
-        Executa o script de conversão de frota (mista/elétrica) 
-        utilizando o caminho definido no dicionário config.
+        Executes the fleet conversion script (mixed/electric)
+        using the path defined in the config dictionary.
         """
-        # 1. Recupera o caminho do dicionário config
+        # 1. Retrieves the path from the config dictionary
 
         script_path = self.config["convert-fleet"]
 
-        # 2. Monta o comando usando o executável do Python atual
-        # Isso garante que bibliotecas como 'random' e 'os' funcionem corretamente
+        # 2. Builds the command using the current Python executable
+        # This ensures that libraries such as 'random' and 'os' work correctly
         cmd = [sys.executable, script_path]
 
         try:
-            # Verifica se o ficheiro existe antes de tentar rodar
+            # Checks if the file exists before attempting to run it
             if not os.path.exists(script_path):
-                print(f"Erro: O script de conversão não foi encontrado em: {script_path}")
+                print(f"Error: Conversion script not found at: {script_path}")
                 return
 
-            print(f"Executando conversão de frota: {' '.join(cmd)}")
+            print(f"Executing fleet conversion: {' '.join(cmd)}")
             
-            # Executa o script. O 'capture_output=True' permite ler o que o script imprimiu (os contadores)
+            # Executes the script. 'capture_output=True' allows reading what the script printed (counters)
             result = subprocess.run(cmd, check=True, capture_output=True, text=True)
             
-            # Imprime o resumo (quantos carros/ônibus foram convertidos) que o script gerou
+            # Prints the summary (how many cars/buses were converted) generated by the script
             print(result.stdout)
-            print("✓ Frota convertida para mista com sucesso!")
+            print("✓ Fleet successfully converted to mixed!")
 
         except subprocess.CalledProcessError as e:
-            print(f"Erro ao executar o script de conversão: {e}")
+            print(f"Error while executing conversion script: {e}")
             if e.stderr:
-                print(f"Detalhes do erro: {e.stderr}")
+                print(f"Error details: {e.stderr}")
         except Exception as e:
-            print(f"Ocorreu um erro inesperado: {e}")
+            print(f"An unexpected error occurred: {e}")
 
     #Starts the simulation
     def startSim(self):
@@ -160,7 +120,20 @@ class Sumo:
             ]
         )
     
-    def refence_length(self):
+    # Advance the simulation
+    def step(self):
+        traci.simulationStep()
+        return
+    
+    def up_streets(self):
+        self.edges = traci.edge.getIDList()
+
+        for edge in self.edges:
+            if not edge.startswith(":"):  # ignore internal edges 
+                self.streets.add(edge.split("_")[0])
+        return
+    
+    def reference_length(self):
         
         start = random.choice(self.streetslist)
         
@@ -169,7 +142,6 @@ class Sumo:
         _, self.refdist = self.farthest_from(far_edge)
         
         return self.refdist
-
 
     def farthest_from(self,source_edge):
         max_dist = 0.0
@@ -189,7 +161,3 @@ class Sumo:
                 continue
 
         return farthest_edge, max_dist
-
-
-
-    

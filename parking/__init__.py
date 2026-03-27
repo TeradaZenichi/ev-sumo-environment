@@ -16,9 +16,12 @@ class PARKING:
         # -----------------------------
         # Location in the network
         # -----------------------------
-        self.lane = traci.parkingarea.getLaneID(self.id)   # lane where the parking is located
-        self.edge = traci.lane.getEdgeID(self.lane)        # corresponding edge
+        self.lane = traci.parkingarea.getLaneID(self.id)                    # Lane where the parking area is located
+        self.edge = traci.lane.getEdgeID(self.lane)                         # Corresponding edge
+        self.startPos = traci.parkingarea.getStartPos(self.id)              # Start position of the parking area on the lane (meters)
+        self.endPos = traci.parkingarea.getEndPos(self.id)                  # End position of the parking area on the lane (meters)
 
+        pass
     def status(self):
         """
         Updates the dynamic state of the parking area.
@@ -30,3 +33,4 @@ class PARKING:
 
         # Total number of vehicles in the parking
         self.veh_count = traci.parkingarea.getVehicleCount(self.id)
+        return

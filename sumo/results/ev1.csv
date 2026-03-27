@@ -1,1 +1,4 @@
-== ID ==,== Velocity (Kh/h) ==,== Atual route ==,== Distance traveled(m) ==,== Destination ==,== Distance from destination(m) ==,== TYPE ==,== Batery level(%) ==,== timestamp ==
+== ID ==,== Velocity (km/h) ==,== Current route ==,== Distance traveled (m) ==,== Destination ==,== Distance to destination (m) ==,== Type ==,== Battery level (%) ==,== Timestamp ==
+ev1,37.55,-E200,1077.66,-E38,1002.79,evehicle,49.57,100.0
+ev1,51.84,-E41,1986.03,-E123,1119.47,evehicle,49.23,177.5
+ev1,52.06,E129,2967.13,-E35,1040.35,evehicle,48.91,257.0
