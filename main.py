@@ -6,6 +6,7 @@ import traci
 import json
 import random
 from datetime import datetime, timedelta
+from environment import SingleEV
 
 # Fix random seed for reproducibility
 random.seed(42)
@@ -18,7 +19,8 @@ with open('config/vehicles.json', "r", encoding="utf-8") as f:
     vehicles = json.load(f)
 
 def main():
-
+    start = datetime.strptime("2026-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
+    env = SingleEV(config, vehicles, start)
     simulation = Sumo(config,vehicles)   # cria objeto da classe Sumo
     simulation.run()
     chargers = EVSE("Charge_ParkD")  # cria objeto da classe EVSE

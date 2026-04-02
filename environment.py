@@ -8,16 +8,28 @@ from ev import EV
 import random
 import traci
 
+class General:
+    def __init__(self, config, start):
+        self.start = start
+        self.Δt = float(config["step"]) 
+        self.time = start
+    
+    def step(self):
+        self.time = self.time + timedelta(seconds=self.Δt)
+
+    
+
 
 
 class SingleEV(gym.Env):
     def __init__(self, config, vehicle, start):
         super().__init__()
+        self.general = General(config, start)
         self.simulation = Sumo(config, vehicle)   # cria objeto da classe Sumo
 
         # esse caso vai ser só um EV e colocar as rotas iniciais e finais da primeira parte no json
         car = vehicle[list(vehicle.keys())[0]]
-        car = EV(list(vehicle.keys())[0], car["type"], [car["initial_edge"],car["routeid"], car["final_edge"]])
+        # car = EV(list(vehicle.keys())[0], car["type"], [car["initial_edge"],car["routeid"], car["final_edge"]])
         self.done = False
         
     
